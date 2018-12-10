@@ -66,7 +66,9 @@ class Metrics(object):
 
     def __str__(self):
         s = ''
-        for name, metric in self.metrics.items():
+        for id, value in enumerate(self.metrics.items()):
+            name, metric = value
+            if id!=0: s += ' '
             s += str(metric)
         return s
 
