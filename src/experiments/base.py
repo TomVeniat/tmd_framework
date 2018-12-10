@@ -116,6 +116,8 @@ class EpochExperiment(BaseExperiment):
 
     def run_epoch(self, epoch, train=True, evaluate=True, _run=None):
         for split, dataset in self.named_datasets():
+            if (split == 'train') and not train:
+                continue
             dataset = tqdm(dataset) if self.use_tqdm else dataset
             with torch.set_grad_enabled(train and (split == 'trainset')):
                 metrics = getattr(self.metrics, split)
