@@ -134,7 +134,7 @@ class Accumulator_(BaseMetric_):
         raise NotImplementedError("Accumulator should be subclassed")
 
     def __str__(self):
-        return '{}: {:.3f}'.format(self.name, self.value)
+        return '{}: {:.2f}'.format(self.name, self.value)
 
 
 class AvgMetric_(Accumulator_):
@@ -142,6 +142,8 @@ class AvgMetric_(Accumulator_):
         super(AvgMetric_, self).__init__(name, time_idx)
 
     def get(self):
+        if self.count==0:
+            return 0
         return self.const + self.acc * 1. / self.count
 
 
@@ -168,7 +170,7 @@ class Parent_(BaseMetric_):
     def reset(self):
         for child in self.children.values():
             child.reset()
-    
+
     def get(self):
         res = dict()
         for (name, child) in viewitems(self.children):
@@ -179,7 +181,7 @@ class Parent_(BaseMetric_):
         if name in self.children:
             return self.children[name]
         raise AttributeError("'{}' object has no attribute '{}'".format(
-            type(self).__name__, name))                 
+            type(self).__name__, name))
 
     def __str__(self):
         s = ' '.join([str(c) for c in self.children.values()])
