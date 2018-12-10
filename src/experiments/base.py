@@ -124,10 +124,11 @@ class EpochExperiment(BaseExperiment):
         for split, dataset in self.named_datasets():
             if (split == 'train') and not train:
                 continue
+            dataset_length = len(dataset)
             dataset = tqdm(dataset) if self.use_tqdm else dataset
             with torch.set_grad_enabled(train and (split == 'trainset')):
                 metrics = getattr(self.metrics, split)
-                for batch in dataset:
+                for n, batch in enumerate(dataset):
                     if isinstance(batch, (tuple, list)):
                         for i, v in enumerate(batch):
                             batch[i] = v.to(self.device)
@@ -141,6 +142,14 @@ class EpochExperiment(BaseExperiment):
                     metrics.update(**output, n=size(batch))
                     if self.use_tqdm:
                         dataset.set_postfix_str(str(metrics))
+                    else:
+                        p_size = str(len(str(dataset_length)))
+                        fmt = '{0}: {1:'+p_size+'}/{2} [{3}]'
+                        print(fmt.format(
+                            epoch,
+                            n,
+                            dataset_length,
+                            str(self)), end="\r")
 
     def __str__(self):
         return str(self.metrics)
