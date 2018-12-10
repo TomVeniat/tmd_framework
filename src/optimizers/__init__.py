@@ -8,15 +8,33 @@ def get_optim_by_name(name):
         return optim.Adam
     raise NotImplementedError(name)
 
-def init_optimizer(modules, _name, _modules, **kwargs):
+
+def get_lr_scheduler_by_name(name):
+    if name == 'None':
+        return None
+    elif name == 'exponential':
+        return optim.lr_scheduler.exponential
+    else:
+        raise NotImplementedError(name)
+
+
+def init_lr_scheduler(optimizer, _name, **kwargs):
+    return get_lr_scheduler_by_name(_name)(optimizer, **kwargs)
+
+
+def init_optimizer(modules, _name, _modules, lr_scheduler=None, **kwargs):
     if isinstance(_modules, str):
         _modules = [_modules]
+    
     parameters = []
     for name in _modules:
         module = modules[name]
         parameters += list(module.parameters())
-    optim = get_optim_by_name(_name)(
-            parameters,
-            **kwargs
-        )
-    return optim
+    optim = get_optim_by_name(_name)(parameters, **kwargs)
+    
+    if lr_scheduler is None:
+        lr_sched = None
+    else:
+        lr_sched = init_lr_scheduler(optim, **lr_scheduler)
+    
+    return optim, lr_sched

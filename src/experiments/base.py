@@ -1,19 +1,11 @@
-from collections import OrderedDict
+import collections
 from tqdm import tqdm, trange
 import torch
 from torch.nn import Module
 from torch.utils.data import DataLoader
 from torch.optim import Optimizer
 
-
-def size(batch):
-    if isinstance(batch, dict):
-        return batch[next(iter(batch))].shape[0]
-    elif isinstance(batch, tuple) or \
-        isinstance(batch, list):
-        return batch[0].shape[0]
-    else:
-        raise NotImplementedError
+from src.utils.tensor import size, convert_tensor
 
 
 class BaseExperiment(object):
@@ -67,15 +59,15 @@ class BaseExperiment(object):
     def __setattr__(self, name, value):
         if isinstance(value, Module):
             if not hasattr(self, '_modules'):
-                self._modules = OrderedDict()
+                self._modules = collections.OrderedDict()
             self._modules[name] = value
         elif isinstance(value, DataLoader):
             if not hasattr(self, '_datasets'):
-                self._datasets = OrderedDict()
+                self._datasets = collections.OrderedDict()
             self._datasets[name] = value
         elif isinstance(value, Optimizer):
             if not hasattr(self, '_optimizers'):
-                self._optimizers = OrderedDict()
+                self._optimizers = collections.OrderedDict()
             self._optimizers[name] = value
         else:
             object.__setattr__(self, name, value)
@@ -128,16 +120,14 @@ class EpochExperiment(BaseExperiment):
             with torch.set_grad_enabled(train and (split == 'trainset')):
                 metrics = getattr(self.metrics, split)
                 for batch in dataset:
-                    if isinstance(batch, (tuple, list)):
-                        for i, v in enumerate(batch):
-                            batch[i] = v.to(self.device)
+                    v = convert_tensor(v, self.device)
+                    if isinstance(batch, collections.Sequence):
                         output = self(*batch, train=(split=='trainset'), evaluate=evaluate)
-                    elif isinstance(batch, dict):
-                        for k, v in batch.items():
-                            batch[k] = v.to(self.device)
+                    elif isinstance(batch, collections.Mapping):
                         output = self(**batch, train=(split=='trainset'), evaluate=evaluate)
                     else:
-                        raise Error('Unknown batch type {}'.format(type(batch)))
+                        raise TypeError(("input must be dicts or lists; found {}"
+                         .format(type(v))))
                     metrics.update(**output, n=size(batch))
                     if self.use_tqdm:
                         dataset.set_postfix_str(str(metrics))
