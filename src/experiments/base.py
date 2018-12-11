@@ -119,8 +119,11 @@ class EpochExperiment(BaseExperiment):
             self.run_epoch(epoch, self.train, self.evaluate, _run)
             self.metrics.state.update(**self.update_state(epoch))
             self.metrics.reset()
+        if not self.use_tqdm:
+            print() # clean terminal line
 
     def run_epoch(self, epoch, train=True, evaluate=True, _run=None):
+        print_size = str(max([len(str(len(dataset))) for split, dataset in self.named_datasets()]))
         for split, dataset in self.named_datasets():
             if (split == 'train') and not train:
                 continue
@@ -143,13 +146,13 @@ class EpochExperiment(BaseExperiment):
                     if self.use_tqdm:
                         dataset.set_postfix_str(str(metrics))
                     else:
-                        p_size = str(len(str(dataset_length)))
-                        fmt = '{0}: {1:'+p_size+'}/{2} [{3}]'
-                        print(fmt.format(
+                        fmt = '{0}: {1:'+print_size+'}/{2:'+print_size+'} [{3}]'
+                        fmt = fmt.format(
                             epoch,
                             n,
                             dataset_length,
-                            str(self)), end="\r")
+                            str(metrics))
+                        print('{0: <79}'.format(fmt), end="\r")
 
     def __str__(self):
         return str(self.metrics)
