@@ -22,11 +22,8 @@ class CorruptedDataset(data.dataset.Dataset):
         batch = self.dataset[item]
         x_measurement, target = batch
         meas = self.corruption.measure(x_measurement.unsqueeze(0), seed=item)
-        dict_var = {
-            'sample': x_measurement,
-            'target': target
-        }
-        dict_var["measured_sample"] = meas["measured_sample"][0]  # because the dataloader add a dimension
+        dict_var = {'sample': x_measurement, 'target': target, 'measured_sample': meas['measured_sample'][0],
+                    'mask': meas['theta'][0]}
         return dict_var
 
 

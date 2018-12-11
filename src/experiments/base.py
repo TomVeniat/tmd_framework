@@ -88,9 +88,9 @@ class BaseExperiment(object):
             if name in datasets:
                 return datasets[name]
         if '_optimizers' in self.__dict__:
-            print(self.__dict__, name)
             optimizers = self.__dict__['_optimizers']
-            return optimizers[name]
+            if name in optimizers:
+                return optimizers[name]
         raise AttributeError("'{}' object has no attribute '{}'".format(
             type(self).__name__, name))
 
@@ -136,12 +136,10 @@ class EpochExperiment(BaseExperiment):
                     if isinstance(batch, (tuple, list)):
                         for i, v in enumerate(batch):
                             batch[i] = v.to(self.device)
-                            print(v.shape)
                         output = self(*batch, train=(split=='trainset'), evaluate=evaluate)
                     elif isinstance(batch, dict):
                         for k, v in batch.items():
                             batch[k] = v.to(self.device)
-                            print(k, v.shape)
                         output = self(**batch, train=(split=='trainset'), evaluate=evaluate)
                     else:
                         raise Error('Unknown batch type {}'.format(type(batch)))

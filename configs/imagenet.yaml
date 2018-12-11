@@ -1,8 +1,11 @@
 modules:
     netG:
-        _name: mnist_classifier
+        _name: sagan_gen
+        mask_input: True
+        ngf: 8
     netD:
-        _name: mnist_classifier
+        _name: sagan_dis
+        ndf: 8
 
 datasets:
     trainset:
