@@ -19,6 +19,7 @@ class KeepPatch(object):
         super().__init__()
         self.size_percent = size_percent
 
+
         if isinstance(size_percent, int):
             self.size_percent = (size_percent, size_percent)
 

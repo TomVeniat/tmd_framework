@@ -1,21 +1,33 @@
 import torch
 import torch.optim as optim
 import torch.nn.functional as F
+import torch.nn as nn
 
 from src.utils.metrics import Metrics
 from .base import EpochExperiment
-
+from ..modules.losses import GANLoss
 
 class UnpairedExperiment(EpochExperiment):
 
-    def __init__(self, model, optim=None, lr_scheduler=None, trainset=[], valset=[], testset=[], **kwargs):
+    def __init__(self, netG, netD, netG_optim, netD_optim, lr_gen=None, lr_dis=None,
+                 trainset=[],  testset=[], device='cuda', backloss_measurement=2., **kwargs):
         super(UnpairedExperiment, self).__init__(**kwargs)
-        self.model = model
+        self.netG = netG
+        self.netD = netD
+        self.netG_optim = netG_optim
+        self.netD_optim = netD_optim
+        self.backloss_measurement = backloss_measurement
+
         self.train = trainset
-        self.valset = valset
         self.testset = testset
-        self.optim = optim
-        self.lr_scheduler = lr_scheduler
+
+        self.likelihood_loss = nn.MSELoss()
+        self.prior_loss = GANLoss().to(device)
+
+
+        self.lr_gen = lr_gen
+        self.lr_dis = lr_dis
+        self.device = device
 
     def update_state(self, epoch):
         if self.lr_scheduler==None:
@@ -39,8 +51,10 @@ class UnpairedExperiment(EpochExperiment):
         )
         return m
 
-    def __call__(self, input, target, train=True, evaluate=True):
+    def __call__(self, sample, target, measured_sample, train=True, evaluate=True):
         self.train_mode(train)
+
+
         output = self.model(input)
         loss = F.nll_loss(output, target)
 
