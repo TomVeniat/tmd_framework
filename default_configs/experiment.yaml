@@ -12,3 +12,10 @@ mnist:
       train: max
       val: 10
     <<: *common
+
+unpaired:
+  nepochs: 10
+  niter:
+    train: max
+    val: 10
+  <<: *common

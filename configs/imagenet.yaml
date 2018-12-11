@@ -1,0 +1,25 @@
+modules:
+    model:
+        _name: mnist_classifier
+
+datasets:
+    trainset:
+        _name: imagenet_tiny
+        train: True
+        batch_size: &batch_size 32
+
+    testset:
+        _name: imagenet_tiny
+        train: False
+        batch_size: *batch_size
+
+optimizers:
+    optim:
+        _name: adam
+        _modules: model
+        lr: 0.001
+
+experiment:
+    _name: unpaired
+    nepochs: 10
+    use_tqdm: True
