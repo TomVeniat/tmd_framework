@@ -120,15 +120,19 @@ class EpochExperiment(BaseExperiment):
             self.run_epoch(epoch, self.train, self.evaluate, _run)
             self.metrics.state.update(**self.update_state(epoch))
             self.metrics.reset()
+        if not self.use_tqdm:
+            print() # clean terminal line
 
     def run_epoch(self, epoch, train=True, evaluate=True, _run=None):
+        print_size = str(max([len(str(len(dataset))) for split, dataset in self.named_datasets()]))
         for split, dataset in self.named_datasets():
             if (split == 'train') and not train:
                 continue
+            dataset_length = len(dataset)
             dataset = tqdm(dataset) if self.use_tqdm else dataset
             with torch.set_grad_enabled(train and (split == 'trainset')):
                 metrics = getattr(self.metrics, split)
-                for batch in dataset:
+                for n, batch in enumerate(dataset):
                     if isinstance(batch, (tuple, list)):
                         for i, v in enumerate(batch):
                             batch[i] = v.to(self.device)
@@ -144,6 +148,14 @@ class EpochExperiment(BaseExperiment):
                     metrics.update(**output, n=size(batch))
                     if self.use_tqdm:
                         dataset.set_postfix_str(str(metrics))
+                    else:
+                        fmt = '{0}: {1:'+print_size+'}/{2:'+print_size+'} [{3}]'
+                        fmt = fmt.format(
+                            epoch,
+                            n,
+                            dataset_length,
+                            str(metrics))
+                        print('{0: <79}'.format(fmt), end="\r")
 
     def __str__(self):
         return str(self.metrics)
