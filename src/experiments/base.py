@@ -9,11 +9,9 @@ from src.utils.tensor import size, convert_tensor
 
 
 class BaseExperiment(object):
-    def __init__(self, device='cuda:0', verbose=1, train=True, evaluate=True):
+    def __init__(self, device='cuda:0', verbose=1):
         self.device = device
         self.verbose = verbose
-        self.train = train
-        self.evaluate = evaluate
 
     def update_state(self, epoch):
         return self.get_state()
@@ -21,12 +19,12 @@ class BaseExperiment(object):
     def get_state(self):
         return {}
 
-    def train_mode(self, mode=True):
+    def training(self, mode=True):
         for m in self.modules():
             m.train(mode)
     
-    def eval_mode(self):
-        self.train_mode(mode=False)
+    def evaluating(self):
+        self.training(mode=False)
 
     def to_device(self):
         for m in self.modules():
@@ -56,11 +54,15 @@ class BaseExperiment(object):
         for name, optimizer in self._optimizers.items():
             yield name, optimizer
 
+    def zero_grad(self):
+        for optim in self.optimizers():
+            optim.zero_grad()
+
     def __setattr__(self, name, value):
         if isinstance(value, Module):
             if not hasattr(self, '_modules'):
                 self._modules = collections.OrderedDict()
-            self._modules[name] = value
+            self._modules[name] = value.to(self.device)
         elif isinstance(value, DataLoader):
             if not hasattr(self, '_datasets'):
                 self._datasets = collections.OrderedDict()
@@ -83,7 +85,8 @@ class BaseExperiment(object):
                 return datasets[name]
         if '_optimizers' in self.__dict__:
             optimizers = self.__dict__['_optimizers']
-            return optimizers[name]
+            if name in optimizers:
+                return optimizers[name]
         raise AttributeError("'{}' object has no attribute '{}'".format(
             type(self).__name__, name))     
     

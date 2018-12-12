@@ -3,18 +3,18 @@ modules:
         _name: mnist_classifier
 
 datasets:
-    trainset:
+    train:
         _name: mnist
         train: True
         batch_size: &batch_size 22
 
-    testset:
+    val:
         _name: mnist
         train: False
         batch_size: *batch_size
 
 optimizers:
-    optim:
+    optimizer:
         _name: sgd
         _modules: model
         lr: 0.001

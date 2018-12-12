@@ -32,9 +32,4 @@ def init_optimizer(modules, _name, _modules, lr_scheduler=None, **kwargs):
         parameters += list(module.parameters())
     optim = get_optim_by_name(_name)(parameters, **kwargs)
     
-    if lr_scheduler is None:
-        lr_sched = None
-    else:
-        lr_sched = init_lr_scheduler(optim, **lr_scheduler)
-    
-    return optim, lr_sched
+    return optim

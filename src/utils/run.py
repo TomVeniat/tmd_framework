@@ -63,10 +63,12 @@ class DefaultOptions(CommandLineOption):
     def apply(cls, args, run):
         run.info['some'] = args
 
+from sacred.utils import apply_backspaces_and_linefeeds
 
 def sacred_run(command, default_configs_root='default_configs'):
 
     ex = Experiment('default')
+    ex.captured_out_filter = apply_backspaces_and_linefeeds
 
     @ex.config_hook
     def default_config(config, command_name, logger):

@@ -8,7 +8,7 @@ common: &common
 
 mnist:
     nepochs: 10
-    niter:
-      train: max
-      val: 10
+    # niter:
+    #   train: max
+    #   val: 10
     <<: *common
