@@ -26,7 +26,7 @@ class BaseMetric_(object):
 
     def hook(self):
         for hook in self.hooks:
-            hook()
+            hook(self)
 
     def reset(self):
         raise NotImplementedError("reset should be re-implemented "
@@ -161,6 +161,7 @@ class Parent_(BaseMetric_):
         self.children = dict()
         for child in children:
             self.children[child.name] = child
+            child.name = name + '_' + child.name
 
     def update(self, n=1, **kwargs):
         for (key, value) in kwargs.items():

@@ -22,6 +22,7 @@ class BaseExperiment(object):
         self.verbose = verbose
         self.train = train
         self.evaluate = evaluate
+        self.views = {}
 
     def update_state(self, epoch):
         return {}
@@ -103,7 +104,6 @@ class BaseExperiment(object):
         else:
             object.__delattr__(self, name)
 
-
 class EpochExperiment(BaseExperiment):
     def __init__(self, nepochs=100, use_tqdm=True, niter='max', **kwargs):
         super(EpochExperiment, self).__init__(**kwargs)
@@ -112,7 +112,7 @@ class EpochExperiment(BaseExperiment):
         self.niter = niter
 
     def run(self, _run=None):
-        self.metrics = self.init_metrics(_run)
+        self.metrics = self._init_metrics(_run)
         self.to_device()
         iterator = trange if self.use_tqdm else range
         for epoch in iterator(1, self.nepochs + 1):
@@ -164,3 +164,17 @@ class EpochExperiment(BaseExperiment):
         # if self.verbose > 2:
         #     s += str(self.metrics.state)
         # return s
+
+    def _init_metrics(self, *args, **kwargs):
+        metrics = self.init_metrics(*args, **kwargs)
+        for key, m in metrics.metrics.items():
+            for key, child in m.children.items():
+                child.add_hook(self.metrics_controller)
+
+        return metrics
+
+    def init_metrics(self):
+        raise NotImplementedError("init_metrics should be re-implemented ")
+
+    def metrics_controller(self):
+        raise NotImplementedError("metrics_controller should be re-implemented ")

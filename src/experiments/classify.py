@@ -1,10 +1,12 @@
 import torch
+import visdom
 import torch.optim as optim
 import torch.nn.functional as F
 
 from src.utils.metrics import Metrics
 from .base import EpochExperiment
 
+vis = visdom.Visdom() # TO CLEAN LATER
 
 class MNISTExperiment(EpochExperiment):
 
@@ -38,6 +40,13 @@ class MNISTExperiment(EpochExperiment):
             children=(m.AvgMetric(name='lr'),),
         )
         return m
+
+    def metrics_controller(self, metric):
+        # Example with visdom
+        if 'view1' not in self.views:
+            self.views['view1'] = vis.text('')
+        else:
+            vis.text(metric.name, win=self.views['view1'])
 
     def __call__(self, input, target, train=True, evaluate=True):
         self.train_mode(train)

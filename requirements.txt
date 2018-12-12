@@ -1,6 +1,7 @@
 tqdm
 numpy
 torch
+future
 torchvision
 -e git://github.com/IDSIA/sacred.git#egg=sacred
 pyyaml
