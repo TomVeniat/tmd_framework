@@ -64,9 +64,9 @@ class DefaultOptions(CommandLineOption):
         run.info['some'] = args
 
 
-def sacred_run(command, name='train', default_configs_root='default_configs'):
+def sacred_run(command, default_configs_root='default_configs'):
 
-    ex = Experiment(name)
+    ex = Experiment('default')
 
     @ex.config_hook
     def default_config(config, command_name, logger):
