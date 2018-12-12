@@ -122,7 +122,7 @@ class EpochExperiment(BaseExperiment):
             with torch.set_grad_enabled(train and (split == 'trainset')):
                 metrics = getattr(self.metrics, split)
                 for batch in dataset:
-                    v = convert_tensor(v, self.device)
+                    batch = convert_tensor(batch, self.device)
                     if isinstance(batch, collections.Sequence):
                         output = self(*batch, train=(split=='trainset'), evaluate=evaluate)
                     elif isinstance(batch, collections.Mapping):
