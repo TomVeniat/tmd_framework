@@ -1,9 +1,11 @@
 from os.path import join
 from copy import deepcopy
+from docopt import docopt
+
 from sacred import Experiment
 from sacred.utils import recursive_update
 from sacred.config import load_config_file
-
+from sacred.commandline_options import CommandLineOption, gather_command_line_options
 
 # functions for generalizing ingredients
 
@@ -49,10 +51,24 @@ from sacred.config import load_config_file
 #     return default_config
 
 
+
+class DefaultOptions(CommandLineOption):
+    """ This is my even better personal flag """
+
+    short_flag = 'o'
+    arg = 'MESSAGE'
+    arg_description = 'The cool message that gets saved to info'
+
+    @classmethod
+    def apply(cls, args, run):
+        run.info['some'] = args
+
+
 def sacred_run(command, name='train', default_configs_root='default_configs'):
 
     ex = Experiment(name)
 
+    @ex.config_hook
     def default_config(config, command_name, logger):
         default_config = {}
         
@@ -80,6 +96,21 @@ def sacred_run(command, name='train', default_configs_root='default_configs'):
 
         return default_config
 
-    ex.config_hook(default_config)
+    @ex.option_hook
+    def default_options(options):
+        if options['--default_options'] is None:
+            return
+        options_fn = options['--default_options']
+        default_options = load_config_file(options_fn)
+        args = []
+        for k, v in default_options.items():
+            args += [str(k), str(v)]
+        _, _, internal_usage = ex.get_usage()
+        default_options = docopt(internal_usage, args, help=False)
+        for option in gather_command_line_options():
+            option_value = default_options.get(option.get_flag(), False)
+            if option_value and options.get(option.get_flag(), None) is None:
+                options[option.get_flag()] = option_value
+
     ex.main(command)
     ex.run_commandline()

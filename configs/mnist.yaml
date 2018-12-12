@@ -18,9 +18,9 @@ optimizers:
         _name: sgd
         _modules: model
         lr: 0.001
-        scheduler:
-            _name: exponential
-            gamma: 0.99
+        # scheduler:
+        #     _name: exponential
+        #     gamma: 0.99
 
 experiment:
     _name: mnist

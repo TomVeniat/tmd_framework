@@ -23,6 +23,7 @@ def init_and_run(experiment, modules, datasets, optimizers, _run=None):
         optims[optimizer_name] = init_optimizer(mods, **optimizer_config)
 
     # initializing experiment and running it
+    exit()
     init_experiment(**mods, **dsets, **optims, **experiment).run(_run)
 
 
