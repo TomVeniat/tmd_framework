@@ -1,11 +1,8 @@
 import collections
-from tqdm import tqdm, trange
 import torch
 from torch.nn import Module
 from torch.utils.data import DataLoader
 from torch.optim import Optimizer
-
-from src.utils.tensor import size, convert_tensor
 
 
 class BaseExperiment(object):

@@ -1,6 +1,7 @@
 #!/bin/sh
 
 name="$1"
+device="$2"
 loglevel="20"
 
 options="
@@ -11,7 +12,10 @@ options="
 
 config="configs/$name.yaml"
 
-run="python run.py $options with $config ${@:2}"
+run="
+    OMP_NUM_THREADS=4 CUDA_VISIBLE_DEVICES=$device
+    python run.py $options with $config ${@:3}
+    "
 
 printf "$run \n\n"
 eval $run
