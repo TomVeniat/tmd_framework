@@ -1,0 +1,14 @@
+
+common: &common
+  nepochs: 10
+  verbose: 1
+  use_tqdm: True
+
+
+
+mnist:
+    nepochs: 10
+    # niter:
+    #   train: max
+    #   val: 10
+    <<: *common
