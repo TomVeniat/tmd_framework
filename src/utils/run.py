@@ -5,7 +5,7 @@ from docopt import docopt
 from sacred import Experiment
 from sacred.utils import recursive_update
 from sacred.config import load_config_file
-from sacred.commandline_options import CommandLineOption, gather_command_line_options
+# from sacred.commandline_options import CommandLineOption
 
 # functions for generalizing ingredients
 
@@ -51,24 +51,23 @@ from sacred.commandline_options import CommandLineOption, gather_command_line_op
 #     return default_config
 
 
+# class DefaultOptions(CommandLineOption):
+#     """ This is my even better personal flag """
 
-class DefaultOptions(CommandLineOption):
-    """ This is my even better personal flag """
+#     short_flag = 'o'
+#     arg = 'MESSAGE'
+#     arg_description = 'The cool message that gets saved to info'
 
-    short_flag = 'o'
-    arg = 'MESSAGE'
-    arg_description = 'The cool message that gets saved to info'
+#     @classmethod
+#     def apply(cls, args, run):
+#         run.info['some'] = args
 
-    @classmethod
-    def apply(cls, args, run):
-        run.info['some'] = args
+# from sacred.utils import apply_backspaces_and_linefeeds
 
-from sacred.utils import apply_backspaces_and_linefeeds
 
 def sacred_run(command, default_configs_root='configs/default'):
 
     ex = Experiment('default')
-    ex.captured_out_filter = apply_backspaces_and_linefeeds
 
     @ex.config_hook
     def default_config(config, command_name, logger):
@@ -98,22 +97,22 @@ def sacred_run(command, default_configs_root='configs/default'):
 
         return default_config
 
-    @ex.option_hook
-    def default_options(options):
-        if options['--default_options'] is None:
-            return
-        options_fn = options['--default_options']
-        default_options = load_config_file(options_fn)
-        args = []
-        for k, v in default_options.items():
-            args += [str(k), str(v)]
-        _, _, internal_usage = ex.get_usage()
-        default_options = docopt(internal_usage, [], help=False)
-        print('default_options', default_options)
-        for option in gather_command_line_options():
-            option_value = default_options.get(option.get_flag(), False)
-            if option_value and options.get(option.get_flag(), None) is None:
-                options[option.get_flag()] = option_value
+    # @ex.option_hook
+    # def default_options(options):
+    #     if options['--default_options'] is None:
+    #         return
+    #     options_fn = options['--default_options']
+    #     default_options = load_config_file(options_fn)
+    #     args = []
+    #     for k, v in default_options.items():
+    #         args += [str(k), str(v)]
+    #     _, _, internal_usage = ex.get_usage()
+    #     default_options = docopt(internal_usage, [], help=False)
+    #     print('default_options', default_options)
+    #     for option in gather_command_line_options():
+    #         option_value = default_options.get(option.get_flag(), False)
+    #         if option_value and options.get(option.get_flag(), None) is None:
+    #             options[option.get_flag()] = option_value
 
     ex.main(command)
     ex.run_commandline()
