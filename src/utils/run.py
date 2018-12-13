@@ -65,7 +65,7 @@ class DefaultOptions(CommandLineOption):
 
 from sacred.utils import apply_backspaces_and_linefeeds
 
-def sacred_run(command, default_configs_root='default_configs'):
+def sacred_run(command, default_configs_root='configs/default'):
 
     ex = Experiment('default')
     ex.captured_out_filter = apply_backspaces_and_linefeeds
@@ -108,7 +108,8 @@ def sacred_run(command, default_configs_root='default_configs'):
         for k, v in default_options.items():
             args += [str(k), str(v)]
         _, _, internal_usage = ex.get_usage()
-        default_options = docopt(internal_usage, args, help=False)
+        default_options = docopt(internal_usage, [], help=False)
+        print('default_options', default_options)
         for option in gather_command_line_options():
             option_value = default_options.get(option.get_flag(), False)
             if option_value and options.get(option.get_flag(), None) is None:

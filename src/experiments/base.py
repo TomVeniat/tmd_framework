@@ -26,9 +26,9 @@ class BaseExperiment(object):
     def evaluating(self):
         self.training(mode=False)
 
-    def to_device(self):
+    def to(self, device):
         for m in self.modules():
-            m.to(self.device)
+            m.to(device)
 
     def modules(self):
         for name, module in self.named_modules():
