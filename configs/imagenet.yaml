@@ -1,0 +1,42 @@
+modules:
+    netG:
+        _name: sagan_gen
+        mask_input: True
+        ngf: 8
+    netD:
+        _name: sagan_dis
+        ndf: 8
+
+datasets:
+    trainset:
+        _name: imagenet_tiny
+        train: True
+        batch_size: &batch_size 32
+        corruption: &corruption
+            name: remove_pix_dark
+            percent: 0.90
+
+
+    testset:
+        _name: imagenet_tiny
+        train: False
+        batch_size: *batch_size
+        corruption: *corruption
+
+
+optimizers:
+    netG_optim:
+        _name: adam
+        _modules: netG
+        lr: 0.001
+
+    netD_optim:
+        _name: adam
+        _modules: netD
+        lr: 0.001
+
+experiment:
+    _name: unpaired
+    nepochs: 10
+    use_tqdm: True
+    device: cuda

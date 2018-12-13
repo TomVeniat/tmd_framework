@@ -13,3 +13,8 @@ mnist: &mnist
 
 fashion_mnist:
   <<: *mnist
+
+imagenet_tiny:
+    root: '/local/pajot/data/tiny-imagenet-200/'
+    im_size: 64
+    <<: *common

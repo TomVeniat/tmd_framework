@@ -1,14 +1,13 @@
-from functools import partial
-
-from .classifiers import MnistClassifier
+from .nets import init_net, ResNetGenerator, ResNetDiscriminator
 
 
-def get_module_by_name(name):
-	if name == 'mnist_classifier':
-		return MnistClassifier
-	# elif:
-	# 	return partial(init_generator, SaganGenerator)
+def get_module_by_name(name, **kwargs):
+	if name == 'sagan_gen':
+		return init_net(ResNetGenerator, **kwargs)
+	elif name == 'sagan_dis':
+		return init_net(ResNetDiscriminator, **kwargs)
 	raise NotImplementedError(name)
 
+
 def init_module(_name, **kwargs):
-	return get_module_by_name(_name)(**kwargs)
+	return get_module_by_name(_name, **kwargs)

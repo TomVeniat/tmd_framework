@@ -8,7 +8,21 @@ common: &common
 
 mnist:
     nepochs: 10
+<<<<<<< HEAD:configs/default/experiment.yaml
     # niter:
     #   train: max
     #   val: 10
     <<: *common
+=======
+    niter:
+      train: max
+      val: 10
+    <<: *common
+
+unpaired:
+  nepochs: 10
+  niter:
+    train: max
+    val: 10
+  <<: *common
+>>>>>>> origin/arthur:default_configs/experiment.yaml

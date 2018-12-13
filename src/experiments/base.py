@@ -12,15 +12,12 @@ class BaseExperiment(object):
         self._run = _run
 
     def update_state(self, epoch):
-        return self.get_state()
-
-    def get_state(self):
         return {}
 
     def training(self, mode=True):
         for m in self.modules():
             m.train(mode)
-    
+
     def evaluating(self):
         self.training(mode=False)
 
@@ -60,7 +57,9 @@ class BaseExperiment(object):
         if isinstance(value, Module):
             if not hasattr(self, '_modules'):
                 self._modules = collections.OrderedDict()
-            self._modules[name] = value.to(self.device)
+            # this may be dangerous... or is it?
+            # self._modules[name] = value.to(self.device)
+            self._modules[name] = value
         elif isinstance(value, DataLoader):
             if not hasattr(self, '_datasets'):
                 self._datasets = collections.OrderedDict()
@@ -86,8 +85,8 @@ class BaseExperiment(object):
             if name in optimizers:
                 return optimizers[name]
         raise AttributeError("'{}' object has no attribute '{}'".format(
-            type(self).__name__, name))     
-    
+            type(self).__name__, name))
+
     def __delattr__(self, name):
         if name in self._modules:
             del self._modules[name]
