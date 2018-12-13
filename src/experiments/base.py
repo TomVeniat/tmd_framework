@@ -6,9 +6,10 @@ from torch.optim import Optimizer
 
 
 class BaseExperiment(object):
-    def __init__(self, device='cuda:0', verbose=1):
+    def __init__(self, device='cuda:0', verbose=1, _run=None):
         self.device = device
         self.verbose = verbose
+        self._run = _run
 
     def update_state(self, epoch):
         return self.get_state()

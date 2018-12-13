@@ -47,11 +47,6 @@ class MNISTExperiment(BaseExperiment):
         evaluator = Engine(self.eval_step)
         Accuracy(output_transform=lambda x: (x['y_pred'], x['y'])).attach(evaluator, 'acc')
         
-        @trainer.on(Events.ITERATION_COMPLETED)
-        def log_training_loss(engine):
-            iter = (engine.state.iteration - 1) % len(self.train) + 1
-            print("ITERATION - loss: {:.2f}".format(engine.state.output['loss']))
-        
         @trainer.on(Events.EPOCH_COMPLETED)
         def log_validation_results(engine):
             evaluator.run(self.val)
@@ -61,6 +56,5 @@ class MNISTExperiment(BaseExperiment):
 
         self.trainer = trainer
     
-
-    def run(self, _run=None):
+    def run(self):
         self.trainer.run(self.train, max_epochs=self.nepochs)
