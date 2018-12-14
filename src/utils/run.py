@@ -48,6 +48,22 @@ from sacred.config import load_config_file
 #                 default_config[ingredient][component]['args'] = default_ingredient_args[name]
 #     return default_config
 
+def get_component_configs(config, component_name, default_configs_file):
+    """
+
+    :param config: The global config given by the user.
+    :param component_name: The key of the root-level element to process in the config.
+    :param default_configs_file: The path of the file containing the default configs for the current component.
+    :return: A dict containing the default configurations for each element under the given component.
+    """
+    component_configs = {}
+    default_configs = load_config_file(default_configs_file)
+
+    for name, specified_config in config[component_name].items():
+            selected_config = specified_config['_name']
+            component_configs[name] = default_configs[selected_config]
+    return component_configs
+
 
 def sacred_run(command, name='train', default_configs_root='default_configs'):
 
@@ -55,22 +71,13 @@ def sacred_run(command, name='train', default_configs_root='default_configs'):
 
     def default_config(config, command_name, logger):
         default_config = {}
-        
-        # loading modules default config
-        fn = join(default_configs_root, 'modules.yaml')
-        default_modules_args = load_config_file(fn)
-        default_config['modules'] = {}
-        for module, module_config in config['modules'].items():
-            default_args = default_modules_args[module_config['_name']]
-            default_config['modules'][module] = default_args
 
-        # loading datasets default config
-        fn = join(default_configs_root, 'datasets.yaml')
-        default_datasets_args = load_config_file(fn)
-        default_config['datasets'] = {}
-        for dataset, dataset_config in config['datasets'].items():
-            default_args = default_datasets_args[dataset_config['_name']]
-            default_config['datasets'][dataset] = default_args
+        components = ['datasets', 'modules', 'optimizers']
+
+        for comp in components:
+            file_name = '{}.yaml'.format(comp)
+            default_file_path = join(default_configs_root, file_name)
+            default_config[comp] = get_component_configs(config, comp, default_file_path)
 
         # loading experiment default configs
         fn = join(default_configs_root, 'experiment.yaml')
