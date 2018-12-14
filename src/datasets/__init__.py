@@ -13,9 +13,8 @@ def get_dataset_by_name(name):
     raise NotImplementedError(name)
 
 
-def init_dataset(_name, batch_size, num_workers, drop_last, shuffle, **kwargs):
-    corruption = kwargs.pop('corruption')
-
+def init_dataset(_name, batch_size, num_workers, drop_last, shuffle, corruption, **kwargs):
+    
     ds = get_dataset_by_name(_name)(**kwargs)
 
     if corruption is not None:
