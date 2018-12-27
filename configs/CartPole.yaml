@@ -1,0 +1,21 @@
+modules:
+    model:
+        _name: policy
+
+datasets:
+
+    gym_env:
+        _name: CartPole-v0
+        batch_size: 32
+
+optimizers:
+    optim:
+        _name: adam
+        _modules: model
+        lr: 3e-2
+
+experiment:
+    _name: actro_crtic
+    gamma: 0.99
+    device: cpu
+    nepisodes: 1000000
