@@ -3,13 +3,16 @@ modules:
         _name: mnist_classifier
 
 datasets:
+
     trainset:
         _name: mnist
+        root: '/local/veniat/data/mnist'
         train: True
         batch_size: &batch_size 22
 
     testset:
         _name: mnist
+        root: '/local/veniat/data/mnist'
         train: False
         batch_size: *batch_size
 
@@ -20,6 +23,6 @@ optimizers:
         lr: 0.001
 
 experiment:
-    _name: mnist
+    _name: mnist_ignite
+    device: cpu
     nepochs: 10
-    use_tqdm: True

@@ -1,8 +1,6 @@
 
 common: &common
   nepochs: 10
-  verbose: 1
-  use_tqdm: True
 
 
 
@@ -12,3 +10,6 @@ mnist:
       train: max
       val: 10
     <<: *common
+
+mnist_ignite:
+  <<: *common
