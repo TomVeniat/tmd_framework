@@ -13,3 +13,6 @@ mnist: &mnist
 
 fashion_mnist:
   <<: *mnist
+
+CartPole-v0:
+    id: CartPole-v0

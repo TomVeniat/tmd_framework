@@ -1,3 +1,4 @@
+from src.experiments.ActorCriticExperiment import ActorCriticExperiment
 from src.experiments.IgniteExperiment import IgniteExperiment
 from .classify import MNISTExperiment
 
@@ -7,6 +8,8 @@ def get_experiment_by_name(name):
 		return MNISTExperiment
 	elif name == 'mnist_ignite':
 		return IgniteExperiment
+	elif name == 'actor_critic':
+		return ActorCriticExperiment
 
 	raise NotImplementedError(name)
 

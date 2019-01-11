@@ -19,3 +19,19 @@ class MnistClassifier(nn.Module):
         x = F.dropout(x, training=self.training)
         x = self.fc2(x)
         return F.log_softmax(x, dim=1)
+
+class Policy(nn.Module):
+    def __init__(self, hidden_size, action_dim):
+        super(Policy, self).__init__()
+        self.affine1 = nn.Linear(4, hidden_size)
+        self.action_head = nn.Linear(hidden_size, action_dim)
+        self.value_head = nn.Linear(hidden_size, 1)
+
+        self.saved_actions = []
+        self.rewards = []
+
+    def forward(self, x):
+        x = F.relu(self.affine1(x))
+        action_scores = self.action_head(x)
+        state_values = self.value_head(x)
+        return F.softmax(action_scores, dim=-1), state_values

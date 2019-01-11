@@ -2,8 +2,6 @@
 common: &common
   nepochs: 10
 
-
-
 mnist:
     nepochs: 10
     niter:
@@ -13,3 +11,8 @@ mnist:
 
 mnist_ignite:
   <<: *common
+
+actor_critic:
+  nepisodes: 1000000
+  render: True
+  log_interval: 10

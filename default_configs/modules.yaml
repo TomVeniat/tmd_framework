@@ -3,6 +3,10 @@
 mnist_classifier:
     num_classes: 10
 
+policy:
+    hidden_size: 128
+    action_dim: 2
+
 # # Generators
 # common_generator:
 #     ngf: 64
