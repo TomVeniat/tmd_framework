@@ -4,8 +4,10 @@ mnist_classifier:
     num_classes: 10
 
 policy:
+    obs_size: 8
     hidden_size: 128
-    action_dim: 2
+    action_size: 4
+    critic: false
 
 # # Generators
 # common_generator:

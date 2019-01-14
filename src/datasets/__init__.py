@@ -10,7 +10,7 @@ def get_dataset_by_name(name):
         return partial(mnist, fashion=False)
     elif name == 'fashion_mnist':
         return partial(mnist, fashion=True)
-    elif name == 'CartPole-v0':
+    elif name == 'gym':
         return gym.make
     raise NotImplementedError(name)
 

@@ -1,9 +1,8 @@
+from src.utils.run import sacred_run
 from src.experiments import init_experiment
 from src.datasets import init_dataset
 from src.modules import init_module
 from src.optimizers import init_optimizer
-from src.utils.run import sacred_run
-
 
 def init_and_run(experiment, modules, datasets, optimizers, _run=None):
 

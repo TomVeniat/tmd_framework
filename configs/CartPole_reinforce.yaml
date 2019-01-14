@@ -1,21 +1,25 @@
 modules:
     policy:
         _name: policy
+        critic: false
+        obs_size: 8
+        action_size: 4
 
 datasets:
     gym_env:
-        _name: CartPole-v0
+        _name: gym
         batch_size: 32
+        id: LunarLander-v2
 #        id: CartPole-v0
 
 optimizers:
     optim:
         _name: adam
         _modules: policy
-        lr: 0.03
+        lr: 0.01
 
 experiment:
-    _name: actor_critic
+    _name: reinforce
     gamma: 0.99
     device: cpu
     nepisodes: 1000000
