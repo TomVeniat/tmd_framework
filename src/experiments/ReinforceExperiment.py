@@ -17,17 +17,6 @@ except ImportError:
 
 from ignite.engine import Engine, Events
 
-
-
-def select_action(model, observation):
-    state = torch.from_numpy(observation).float().unsqueeze(0)
-    probs = model(state)
-    m = Categorical(probs)
-    action = m.sample()
-    model.saved_log_probs.append(m.log_prob(action))
-    return action.item()
-
-
 EPISODE_STARTED = Events.EPOCH_STARTED
 EPISODE_COMPLETED = Events.EPOCH_COMPLETED
 
@@ -54,7 +43,7 @@ class RLExperiment(object):
             self.policy.rewards.append(reward)
 
             if done:
-                print(self.policy.rewards)
+                # print(self.policy.rewards)
                 engine.terminate_epoch()
                 # assert len(self.policy.rewards) - 1 == sum(self.policy.rewards)
                 engine.state.last_episode_r = sum(self.policy.rewards)

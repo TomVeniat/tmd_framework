@@ -14,10 +14,10 @@ mnist_ignite:
 
 actor_critic:
   nepisodes: 1000000
-  render: true
+  render: false
   log_interval: 10
 
 reinforce:
   nepisodes: 1000000
-  render: true
+  render: false
   log_interval: 10
