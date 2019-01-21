@@ -14,5 +14,8 @@ mnist: &mnist
 fashion_mnist:
   <<: *mnist
 
-gym:
+LunarLander:
+    id: LunarLander-v2
+
+CartPole:
     id: CartPole-v0

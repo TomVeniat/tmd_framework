@@ -1,7 +1,7 @@
+import torch
 from collections import namedtuple
 import numpy as np
 
-import torch
 import torch.nn.functional as F
 
 from ignite.engine import Events, Engine

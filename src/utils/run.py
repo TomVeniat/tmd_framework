@@ -65,7 +65,7 @@ def get_component_configs(config, component_name, default_configs_file):
     return component_configs
 
 
-def sacred_run(command, name='train', default_configs_root='default_configs'):
+def sacred_run(command, name='train', default_configs_root='default_configs', ex_hook=None):
 
     ex = Experiment(name)
 
@@ -86,6 +86,9 @@ def sacred_run(command, name='train', default_configs_root='default_configs'):
         default_config['experiment'] = default_args
 
         return default_config
+
+    if ex_hook:
+        ex_hook(ex)
 
     ex.config_hook(default_config)
     ex.main(command)

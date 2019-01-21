@@ -18,10 +18,14 @@ def load_conf(path):
 def get_mongo_connection_url(mongo_conf=None, mongo_path=None):
     if mongo_conf is None:
         mongo_conf = load_conf(mongo_path)
-    db_user = '{}:{}'.format(mongo_conf['user'], mongo_conf['passwd'])
+    if 'user' in mongo_conf and 'passwd' in mongo_conf:
+        db_user = '{}:{}'.format(mongo_conf['user'], mongo_conf['passwd'])
+    else:
+        db_user = None
+
     db_host = '{}:{}'.format(mongo_conf['host'], mongo_conf['port'])
     auth_db = mongo_conf.get('auth_db', mongo_conf['db'])
-    return 'mongodb://{}@{}/{}'.format(db_user, db_host, auth_db)
+    return f'mongodb://{db_user}@{db_host}/{auth_db}' if db_user else f'mongodb://{db_host}'
 
 
 def get_mongo_db(mongo_conf=None, mongo_path=None):

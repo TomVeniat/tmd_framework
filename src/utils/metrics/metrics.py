@@ -1,5 +1,10 @@
 import time
+import warnings
+
+import torch
 from collections import defaultdict, OrderedDict
+
+from ignite.metrics import Metric
 
 from .metrics_ import TimeMetric_, AvgMetric_, SumMetric_, Parent_,\
     SimpleMetric_, BestMetric_, DynamicMetric_
