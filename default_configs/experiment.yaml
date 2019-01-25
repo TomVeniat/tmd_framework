@@ -1,23 +1,19 @@
+global_exp : &global
+  device: cpu
+  log_interval: 10
 
-common: &common
-  nepochs: 10
 
-mnist:
-    nepochs: 10
-    niter:
-      train: max
-      val: 10
-    <<: *common
+rl_exp: &rl_exp
+  nepisodes: 5000
+  render: false
 
-mnist_ignite:
-  <<: *common
+  gamma: 0.99
+  normalize_reward: false
+
+  <<: *global
 
 actor_critic:
-  nepisodes: 1000000
-  render: false
-  log_interval: 10
+  <<: *rl_exp
 
-reinforce:
-  nepisodes: 1000000
-  render: false
-  log_interval: 10
+pg:
+  <<: *rl_exp

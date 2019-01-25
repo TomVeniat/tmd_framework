@@ -16,10 +16,10 @@ def get_dataset_by_name(name):
     elif name == 'fashion_mnist':
         return partial(mnist, fashion=True)
     elif name in SUPPORTED_GYM_ENV:
-        # dir = f'/local/{os.environ.get("USER")}/runs/gym/videos/{datetime.datetime.now()}'
-        # f = lambda id: gym.wrappers.Monitor(gym.make(id), directory=dir, force=True)
-        # return f
-        return gym.make
+        dir = f'/local/{os.environ.get("USER")}/runs/gym/videos/{datetime.datetime.now()}'
+        f = lambda id: gym.wrappers.Monitor(gym.make(id), directory=dir, force=True)
+        return f
+        # return gym.make
     raise NotImplementedError(name)
 
 

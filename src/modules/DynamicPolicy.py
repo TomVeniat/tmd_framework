@@ -12,11 +12,12 @@ class Output(nn.Module):
 
     def __init__(self, hidden_size, out_size, bias):
         super(Output, self).__init__()
-        self.lin = nn.Linear(hidden_size, out_size, bias)
+        self.out_lin = nn.Linear(hidden_size, out_size, bias)
 
     def forward(self, inputs):
         assert isinstance(inputs, list)
-        return self.lin(sum(inputs))
+        inputs = sum(inputs)
+        return self.out_lin(inputs)
 
 
 class LinearBlock(NetworkBlock):
@@ -38,9 +39,10 @@ class LinearBlock(NetworkBlock):
 class DynamicPolicy(StochasticSuperNetwork):
     INPUT_OBS = 'InObs'
     INPUT_ACT = 'InAct'
-    OUTPUT_ACT = 'Out'
+    OUTPUT_ACT = 'OutAct'
+    OUTPUT_VAL = 'OutVal'
 
-    def __init__(self, hidden_size, n_layer_pi, n_layer_act, obs_size, action_size, bias=True, *args, **kwargs):
+    def __init__(self, hidden_size, n_layer_pi, n_layer_act, obs_size, action_size, critic, static, use_last_action, bias, *args, **kwargs):
         """
         Represents a 3 Dimensional Neural fabric, in which each layer, scale position has several identical blocks.
         :param n_layer:
@@ -59,59 +61,49 @@ class DynamicPolicy(StochasticSuperNetwork):
         self.n_layer_act = n_layer_act
         self.obs_size = obs_size
         self.action_size = action_size
+        self.critic = critic
 
         self.bias = bias
+        self.static = static
 
-        self.loss = nn.CrossEntropyLoss(reduction='none')
+        self.use_last_action = use_last_action
+
+        # self.loss = nn.CrossEntropyLoss(reduction='none')
 
         self.graph.add_node(self.INPUT_OBS, module=DummyBlock())
         self.graph.add_node(self.INPUT_ACT, module=DummyBlock())
 
-        # last_obs_node = self.INPUT_OBS
-        # last_size = self.obs_size
-        # for i in range(self.n_layer_pi):
-        #     cur_node = 'pi_OBS_{}'.format(i)
-        #     cur_module = LinearBlock(last_size, self.hidden_size, self.bias, relu=True)
-        #
-        #     self.graph.add_node(cur_node, module=cur_module)
-        #     self.graph.add_edge(last_obs_node, cur_node, width_node=cur_node)
-        #
-        #     self.blocks.append(cur_module)
-        #     self.register_stochastic_node(cur_node)
-        #
-        #     last_size = self.hidden_size
-        #     last_obs_node = cur_node
-
         last_obs_node = self.stack_layers(self.n_layer_pi, 'pi_OBS_{}', self.INPUT_OBS, self.obs_size)
         last_act_node = self.stack_layers(self.n_layer_act, 'pi_ACT_{}', self.INPUT_ACT, self.action_size)
-        # last_act_node = self.INPUT_ACT
-        # last_size = self.action_size
-        # for i in range(self.n_layer_act):
-        #     cur_node = 'pi_ACT_{}'.format(i)
-        #     cur_module = LinearBlock(last_size, self.hidden_size, self.bias, relu=True)
-        #
-        #     self.graph.add_node(cur_node, module=cur_module)
-        #     self.graph.add_edge(last_act_node, cur_node, width_node=cur_node)
-        #
-        #     self.blocks.append(cur_module)
-        #     self.register_stochastic_node(cur_node)
-        #
-        #     last_size = self.hidden_size
-        #     last_act_node = cur_node
 
-        cur_module = Output(self.hidden_size, self.action_size, self.bias)
+        out_act_module = Output(self.hidden_size, self.action_size, self.bias)
+        self.add_stoch_node(self.OUTPUT_ACT, out_act_module, [last_obs_node, last_act_node])
+        outputs = [self.OUTPUT_ACT]
 
-        self.graph.add_node(self.OUTPUT_ACT, module=cur_module)
-        self.graph.add_edge(last_obs_node, self.OUTPUT_ACT, width_node=self.OUTPUT_ACT)
-        self.graph.add_edge(last_act_node, self.OUTPUT_ACT, width_node=self.OUTPUT_ACT)
+        if self.critic:
+            out_val_module = Output(self.hidden_size, 1, self.bias)
+            self.add_stoch_node(self.OUTPUT_VAL, out_val_module, [last_obs_node, last_act_node])
+            outputs.append(self.OUTPUT_VAL)
 
-        self.blocks.append(cur_module)
-        self.register_stochastic_node(self.OUTPUT_ACT)
+        self.set_graph(self.graph, [self.INPUT_OBS, self.INPUT_ACT], outputs)
 
-        self.set_graph(self.graph, [self.INPUT_OBS, self.INPUT_ACT], [self.OUTPUT_ACT])
+        self.last_action_vec = torch.zeros(1, self.action_size)
+
+        if self.static:
+            self.set_probas(torch.ones(1, self.n_stoch_nodes))
 
         self.saved_actions = []
         self.rewards = []
+
+    def forward(self, obs):
+        assert isinstance(obs, torch.Tensor)
+        x = [obs, self.last_action_vec]
+        res = super(DynamicPolicy, self).forward(x)
+        if not self.critic:
+            res.append(None)
+        if self.use_last_action:
+            self.last_action_vec = res[0]
+        return res
 
     def stack_layers(self, n, name_format, last_node, last_size):
         for i in range(n):
@@ -128,6 +120,14 @@ class DynamicPolicy(StochasticSuperNetwork):
             last_node = cur_node
 
         return last_node
+
+    def add_stoch_node(self, name, module, inputs):
+        self.graph.add_node(name, module=module)
+        for in_node in inputs:
+            self.graph.add_edge(in_node, name, width_node=name)
+        self.blocks.append(module)
+        self.register_stochastic_node(name)
+
 
 
 

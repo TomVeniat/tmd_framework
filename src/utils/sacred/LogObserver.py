@@ -45,34 +45,34 @@ class LogObserver(RunObserver):
         logger.info(pprint.pformat(self.config))
         local_time = utc_to_local(start_time)
         self.viz.text('Started at {}'.format(local_time))
-
-        logger.info("http://{server}:{port}/env/{env}".format(**self.visdom_opts, env=self.exp_name))
-
-    def heartbeat_event(self, info, captured_out, beat_time, result):
-        pass
-
-    # def log_metrics(self, metrics_by_name, info):
-    #     logger.info('')
-    #     logger.info('')
-    #     logger.info(f'Metric "{metrics_by_name}": {info}')
-    #     logger.info('')
-    #     logger.info('')
-
+        self._log_env_url()
 
     def completed_event(self, stop_time, result):
         local_time = utc_to_local(stop_time)
         logger.info('completed_event')
 
         self.viz.text('Completed at {}'.format(local_time))
+        self._log_env_url()
 
     def interrupted_event(self, interrupt_time, status):
         local_time = utc_to_local(interrupt_time)
         logger.info('interrupted_event')
 
         self.viz.text('Interruped at {}'.format(local_time))
+        self._log_env_url()
 
     def failed_event(self, fail_time, fail_trace):
         local_time = utc_to_local(fail_time)
         logger.info('failed_event')
 
         self.viz.text('Failed at {}\n{}'.format(local_time, fail_trace))
+        self._log_env_url()
+
+    def artifact_event(self, name, filename, metadata=None):
+       logger.info('Adding {}'.format(filename))
+       logger.info('New video')
+
+       self.viz.video(videofile=filename, opts={'title': name, 'width': 600, 'height': 400})
+
+    def _log_env_url(self):
+        logger.info("http://{server}:{port}/env/{env}".format(**self.visdom_opts, env=self.exp_name))

@@ -1,19 +1,19 @@
 
 
-mnist_classifier:
-    num_classes: 10
-
-classic_policy:
+classic:
     hidden_size: 128
     critic: false
 
 ssn: &ssn
-  static: false
+  static: true
   deter_eval: true
 
 
-dyn_policy:
-  hidden_size: 64
+dynamic:
+  hidden_size: 128
   n_layer_pi: 2
   n_layer_act: 1
+
+  use_last_action: false
+  bias: true
   <<: *ssn

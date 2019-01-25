@@ -1,3 +1,6 @@
+import logging
+
+from ignite.engine import Events
 from ignite.metrics import Metric
 
 
@@ -19,10 +22,7 @@ class SimpleAggregationMetric(Metric):
 
     def compute(self):
         return self.value
-    #
-    # def attach(self, engine, name):
-    #     # engine.add_event_handler(Events.EPOCH_COMPLETED, self.completed, name)
-    #     if not engine.has_event_handler(self.started, Events.EPOCH_STARTED):
-    #         engine.add_event_handler(Events.EPOCH_STARTED, self.started)
-    #     if not engine.has_event_handler(self.iteration_completed, Events.ITERATION_COMPLETED):
-    #         engine.add_event_handler(Events.ITERATION_COMPLETED, self.iteration_completed)
+
+    def attach(self, engine, name):
+        super(SimpleAggregationMetric, self).attach(engine, name)
+        engine.add_event_handler(Events.ITERATION_COMPLETED, self.completed, name)

@@ -1,28 +1,24 @@
 modules:
     policy:
-        _name: classic_policy
-#        _name: dyn_policy
-#        critic: false
-        hidden_size: 10
+#        _name: classic
+        _name: dynamic
+        critic: true
+        hidden_size: 64
 
 datasets:
     gym_env:
-        _name: LunarLander
+#        _name: LunarLander
+        _name: CartPole
         batch_size: 32
-        id: LunarLander-v2
-#        id: CartPole-v0
 
 optimizers:
     optim:
         _name: adam
         _modules: policy
-        lr: 0.02
+        lr: 0.005
 #        weight_decay: 0.0001
         weight_decay: 0.0
 
 experiment:
-    _name: reinforce
-    gamma: 0.99
-#    render: true
-    device: cpu
-    nepisodes: 100000
+    _name: pg
+    normalize_reward: false

@@ -1,13 +1,11 @@
 from src.modules.DynamicPolicy import DynamicPolicy
-from .classifiers import MnistClassifier, Policy
+from src.modules.Policy import Policy
 
 
 def get_module_by_name(name):
-    if name == 'mnist_classifier':
-        return MnistClassifier
-    elif name == 'classic_policy':
+    if name == 'classic':
         return Policy
-    elif name == 'dyn_policy':
+    elif name == 'dynamic':
         return DynamicPolicy
     raise NotImplementedError(name)
 

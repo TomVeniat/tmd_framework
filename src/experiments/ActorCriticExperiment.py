@@ -4,10 +4,10 @@ import numpy as np
 
 import torch.nn.functional as F
 
-from ignite.engine import Events, Engine
+from ignite.engine import Events
 from torch.distributions import Categorical
 
-from src.experiments.ReinforceExperiment import RLExperiment
+from src.experiments.PolicyGradientExperiment import PolicyGradientExperiment
 
 EPISODE_STARTED = Events.EPOCH_STARTED
 EPISODE_COMPLETED = Events.EPOCH_COMPLETED
@@ -15,7 +15,7 @@ EPISODE_COMPLETED = Events.EPOCH_COMPLETED
 SavedAction = namedtuple('SavedAction', ['log_prob', 'value'])
 
 
-class ActorCriticExperiment(RLExperiment):
+class ActorCriticExperiment(PolicyGradientExperiment):
 
     def select_action(self, model, observation):
         observation = torch.from_numpy(observation).float()
