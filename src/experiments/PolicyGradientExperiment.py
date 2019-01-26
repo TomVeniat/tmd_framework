@@ -10,6 +10,7 @@ import visdom
 from ignite.engine import Engine, Events
 from supernets.networks.StochasticSuperNetwork import StochasticSuperNetwork
 from torch.distributions import Categorical
+import torch.nn.functional as F
 
 from src.utils import external_resources as external, get_exp_name, VISDOM_CONF_PATH
 from src.utils.metrics.MetaSlidingMetric import SlidingMetric
@@ -36,8 +37,9 @@ class PolicyGradientExperiment(object):
         self.n_videos = 0
 
         self.loggers = {
-            'rewards': ['last', 'sliding', 'running', 'target'],
-            'lengths': ['lastl']
+            'rewards': ['last', 'sliding', 'running', 'target', 'value'],
+            'lengths': ['lastl'],
+            'loss': ['value_l']
         }
         for cat, labels in self.loggers.items():
             for label in labels:
@@ -62,31 +64,35 @@ class PolicyGradientExperiment(object):
         def run_optim_step(engine, iteration):
             obs = engine.state.observation
             done = False
-
             while not done:
                 obs = torch.FloatTensor(obs).unsqueeze(0)
-                action, value = self.select_action(self.policy, obs)
+                action, _ = self.select_action(self.policy, obs)
 
                 obs, reward, done, infos = self.gym_env.step(action)
 
-
                 if self.render:
                     self.gym_env.render()
-                self.policy.rewards.append(reward)
+                self.policy.rewards.append(torch.tensor([reward]))
 
-            return {'reward': sum(self.policy.rewards), 'timestep': len(self.policy.rewards)}
+            rewards = self.policy.rewards
+            values = self.policy.values
+            value_loss = self.finish_episode(self.policy, self.optim, self.gamma, self.normalize_reward, self.eps)
+
+            return {'reward': sum(rewards), 'timestep': len(rewards), 'value_l': value_loss, 'value':sum(values).item()}
 
         self.trainer = Engine(run_optim_step)
         # self.trainer._logger.setLevel(logging.WARNING)
 
-        SlidingMetric(200, lambda x: np.mean(x), lambda x: x['reward']).attach(self.trainer, 'sliding')
+        SlidingMetric(200, lambda x: np.mean(x), lambda x: x['reward'].item()).attach(self.trainer, 'sliding')
 
         SimpleAggregationMetric(lambda old, new: new, lambda x: x['timestep']).attach(self.trainer, 'lastl')
-        SimpleAggregationMetric(lambda old, new: new, lambda x: x['reward']).attach(self.trainer, 'last')
+        SimpleAggregationMetric(lambda old, new: new, lambda x: x['reward'].item()).attach(self.trainer, 'last')
+        SimpleAggregationMetric(lambda old, new: new, lambda x: x['value_l']).attach(self.trainer, 'value_l')
+        SimpleAggregationMetric(lambda old, new: new, lambda x: x['value']).attach(self.trainer, 'value')
 
         def running_update(old, new, gamma=0.99):
             return old * gamma + (1.0 - gamma) * new
-        SimpleAggregationMetric(running_update, lambda x: x['reward']).attach(self.trainer, 'running')
+        SimpleAggregationMetric(running_update, lambda x: x['reward'].item()).attach(self.trainer, 'running')
 
 
         self.trainer.on(Events.STARTED)(self.initialize)
@@ -94,7 +100,7 @@ class PolicyGradientExperiment(object):
         #todo: move to update loop
         self.trainer.on(Events.ITERATION_STARTED)(self.reset_environment_state)
 
-        self.trainer.on(Events.ITERATION_COMPLETED)(self.update_model)
+        # self.trainer.on(Events.ITERATION_COMPLETED)(self.update_model)
         self.trainer.on(Events.ITERATION_COMPLETED)(self.log_hparams)
 
         self.trainer.on(Events.ITERATION_COMPLETED)(self.log_episode)
@@ -106,6 +112,7 @@ class PolicyGradientExperiment(object):
         m = Categorical(logits=action_logits)
         action = m.sample()
         model.saved_actions.append(m.log_prob(action))
+        model.values.append(value)
         return action.item(), value
 
     def initialize(self, engine):
@@ -169,19 +176,25 @@ class PolicyGradientExperiment(object):
 
     def finish_episode(self, model, optimizer, gamma, normalize_reward, eps):
         rewards = self.compute_returns(model.rewards, gamma)
-        rewards = torch.tensor(rewards)
+        rewards = torch.stack(rewards)
+        actual_returns = rewards
         if normalize_reward:
             rewards = (rewards - rewards.mean()) / (rewards.std() + eps)
 
-        policy_loss = [(-log_prob * reward) for log_prob, reward in zip(model.saved_actions, rewards)]
-        # for log_prob, reward in zip(model.saved_actions, rewards):
-        #     policy_loss.append(-log_prob * reward)
+        loss = torch.cat([(-log_prob * reward) for log_prob, reward in zip(model.saved_actions, rewards)]).mean()
+
+        if model.critic:
+            value_loss = F.smooth_l1_loss(torch.cat(model.values), actual_returns).mean()
+        #     loss += value_loss
+
         optimizer.zero_grad()
-        policy_loss = torch.cat(policy_loss).sum()
-        policy_loss.backward()
+        loss.backward()
         optimizer.step()
         model.rewards = []
         model.saved_actions = []
+        model.values = []
+
+        return value_loss.item()
 
     def _save_videos(self):
         if hasattr(self.gym_env, 'videos') and len(self.gym_env.videos) > self.n_videos:

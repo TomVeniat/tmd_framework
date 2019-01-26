@@ -93,6 +93,7 @@ class DynamicPolicy(StochasticSuperNetwork):
             self.set_probas(torch.ones(1, self.n_stoch_nodes))
 
         self.saved_actions = []
+        self.values = []
         self.rewards = []
 
     def forward(self, obs):
