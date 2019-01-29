@@ -13,8 +13,7 @@ class Policy(nn.Module):
         if self.critic:
             self.value_head = nn.Linear(hidden_size, 1)
 
-        self.saved_actions = []
-        self.rewards = []
+        self.actions_log_prob = []
         # self.reset_parameters()
 
     def reset_parameters(self):

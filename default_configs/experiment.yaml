@@ -12,8 +12,12 @@ rl_exp: &rl_exp
 
   <<: *global
 
-actor_critic:
+actor_critic: &actor_critic
+  vf_loss_coef: 0.5
   <<: *rl_exp
+
+ac:
+  <<: *actor_critic
 
 pg:
   <<: *rl_exp

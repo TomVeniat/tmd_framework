@@ -11,7 +11,7 @@ def get_experiment_by_name(name):
 		return IgniteExperiment
 	elif name == 'actor_critic':
 		return ActorCriticExperiment
-	elif name == 'pg':
+	elif name in ['pg', 'ac']:
 		return PolicyGradientExperiment
 
 	raise NotImplementedError(name)

@@ -92,9 +92,7 @@ class DynamicPolicy(StochasticSuperNetwork):
         if self.static:
             self.set_probas(torch.ones(1, self.n_stoch_nodes))
 
-        self.saved_actions = []
-        self.values = []
-        self.rewards = []
+        self.actions_log_prob = []
 
     def forward(self, obs):
         assert isinstance(obs, torch.Tensor)
